@@ -1,60 +1,119 @@
-let controllerConnected = false;
+let gamepad;
 
-function vibrateController() {
-  const gamepads = navigator.getGamepads();
-  for (const gamepad of gamepads) {
-    if (gamepad && gamepad.vibrationActuator) {
-      gamepad.vibrationActuator.playEffect('dual-rumble', {
-        startDelay: 0,
-        duration: 200,
-        weakMagnitude: 1.0,
-        strongMagnitude: 1.0,
-      });
-      controllerConnected = true;
-    }
+function vibrateController(duration) {
+  if (gamepad && 'vibrationActuator' in gamepad) {
+    gamepad.vibrationActuator.playEffect('dual-rumble', {
+      startDelay: 0,
+      duration: duration,
+      weakMagnitude: 1.0,
+      strongMagnitude: 1.0,
+    });
   }
-  updateConnectionStatus();
 }
 
+window.addEventListener('gamepadconnected', (e) => {
+  gamepad = e.gamepad;
+  console.log('Gamepad connected:', gamepad);
+  updateControllerStatus('Connected');
+});
 
+window.addEventListener('gamepaddisconnected', (e) => {
+  gamepad = null;
+  console.log('Gamepad disconnected');
+  updateControllerStatus('Not connected');
+});
 
-function updateConnectionStatus() {
-  const connectionStatus = document.getElementById('connectionStatus');
-  if (controllerConnected) {
-    connectionStatus.textContent = 'Controller connected';
+function updateControllerStatus(status) {
+  const controllerStatusElem = document.getElementById('controllerStatus');
+  controllerStatusElem.textContent = `Controller status: ${status}`;
+
+  if (status === 'Connected') {
+    controllerStatusElem.classList.add('connected');
+    controllerStatusElem.classList.remove('not-connected');
   } else {
-    connectionStatus.textContent = 'No controller connected';
+    controllerStatusElem.classList.add('not-connected');
+    controllerStatusElem.classList.remove('connected');
   }
 }
 
-window.addEventListener('gamepadconnected', updateConnectionStatus);
-window.addEventListener('gamepaddisconnected', updateConnectionStatus);
 
-function connectToChannel() {
-  const channelName = document.getElementById('channelName').value;
+function addChatMessage(message) {
+  const chatMessagesElem = document.getElementById('chatMessages');
+  const newMessageElem = document.createElement('li');
+  newMessageElem.textContent = message;
+  chatMessagesElem.appendChild(newMessageElem);
 
-  const client = new tmi.Client({
+  // Limit the number of displayed chat messages to 5
+  if (chatMessagesElem.childElementCount > 5) {
+    chatMessagesElem.removeChild(chatMessagesElem.firstElementChild);
+  }
+}
+
+function connectToChannel(channelName) {
+  if (!channelName) {
+    alert('Please enter a Twitch channel name.');
+    return;
+  }
+
+  const tmiOptions = {
     connection: {
       secure: true,
       reconnect: true,
     },
     channels: [channelName],
+  };
+
+  const tmiClient = new tmi.Client(tmiOptions);
+
+  tmiClient.connect();
+
+  tmiClient.on('connecting', () => {
+    updateChatConnectionStatus('Connecting');
   });
 
-  client.connect();
-
-  client.on('message', (channel, tags, message, self) => {
-    vibrateController();
-    displayChatMessage(tags, message);
+  tmiClient.on('connected', () => {
+    updateChatConnectionStatus('Connected');
   });
+
+  tmiClient.on('disconnected', () => {
+    updateChatConnectionStatus('Disconnected');
+  });
+
+tmiClient.on('message', (channel, tags, message, self) => {
+  if (tags['display-name'].toLowerCase() === channelName.toLowerCase()) {
+    const match = message.match(/^!bz+$/i);
+    if (match) {
+      const duration = (match[0].length - 1) * 200; // Subtract 1 to exclude the 'b' character
+      vibrateController(duration);
+      showVibrationEmoji(duration);
+    }
+  }
+  addChatMessage(message);
+});
 }
 
-function displayChatMessage(tags, message) {
-  const chatMessages = document.getElementById('chatMessages');
-  const newMessage = document.createElement('li');
-  newMessage.textContent = `${tags['display-name']}: ${message}`;
-  chatMessages.appendChild(newMessage);
-  if (chatMessages.childElementCount > 5) {
-    chatMessages.removeChild(chatMessages.firstChild);
+function updateChatConnectionStatus(status) {
+  const chatConnectionStatusElem = document.getElementById('chatConnectionStatus');
+  chatConnectionStatusElem.textContent = `Chat connection status: ${status}`;
+
+  if (status === 'Connected') {
+    chatConnectionStatusElem.classList.add('connected');
+    chatConnectionStatusElem.classList.remove('not-connected');
+  } else {
+    chatConnectionStatusElem.classList.add('not-connected');
+    chatConnectionStatusElem.classList.remove('connected');
   }
+}
+
+// Auto-connect to the "shindigs" channel on page load
+window.addEventListener('load', () => {
+  connectToChannel('shindigs');
+});
+
+function showVibrationEmoji(duration) {
+  const vibrationEmoji = document.getElementById('vibrationEmoji');
+  vibrationEmoji.classList.remove('hidden');
+  setTimeout(() => {
+    vibrationEmoji.classList.add('hidden');
+  }, duration);
 }

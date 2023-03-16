@@ -3,16 +3,37 @@
 <head>
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
-  <title>Twitch Chat Vibration</title>
+  <title>Twitch Controller Vibration</title>
+  <link rel="stylesheet" href="styles.css">
+
+  <style>
+    body {
+      font-family: Arial, sans-serif;
+    }
+
+    .hidden {
+      display: none;
+    }
+
+    .connected {
+      color: green;
+    }
+
+    .not-connected {
+      color: red;
+    }
+  </style>
 </head>
-<body>
-  <h1>Connect to a Twitch channel and receive vibrations on new chat messages.</h1>
-  <input type="text" id="channelName" placeholder="Enter Twitch channel name">
-  <button onclick="connectToChannel()">Connect</button>
-  <h2>Connection status:</h2>
-  <p id="connectionStatus">No controller connected</p>
-  <h2>Recent chat messages:</h2>
+<body> 
+  <h1>Twitch Controller Vibration</h1>
+  <h2>Channel: <a href="https://twitch.tv/shindigs" target="_blank">shindigs</a></h2>
+  <p>Connect your controller via USB or Bluetooth, and press any button in the browser window to ensure it's connected.</p>
+  <div id="controllerStatus" class="not-connected">Controller status: Not connected</div>
+  <div id="chatConnectionStatus" class="not-connected">Chat connection status: Not connected</div>
+  <div id="vibrationEmoji" class="hidden">&#x1F4F3;</div>
+  <h2>Chat log</h2>
   <ul id="chatMessages"></ul>
+  <p>Find me on <a href="https://twitch.tv/shindigs" target="_blank">shindigs on Twitch</a> and <a href="https://twitter.com/shindags" target="_blank">shindags on Twitter</a>.</p>
   <script src="tmi.min.js"></script>
   <script src="client.js"></script>
 </body>
