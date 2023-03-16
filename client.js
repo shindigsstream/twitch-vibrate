@@ -16,13 +16,7 @@ function vibrateController() {
   updateConnectionStatus();
 }
 
-function vibratePhone() {
-  if ('vibrate' in navigator) {
-    navigator.vibrate(200);
-  } else {
-    console.log('Vibration not supported on this device');
-  }
-}
+
 
 function updateConnectionStatus() {
   const connectionStatus = document.getElementById('connectionStatus');
@@ -51,7 +45,6 @@ function connectToChannel() {
 
   client.on('message', (channel, tags, message, self) => {
     vibrateController();
-    vibratePhone();
     displayChatMessage(tags, message);
   });
 }
@@ -65,21 +58,3 @@ function displayChatMessage(tags, message) {
     chatMessages.removeChild(chatMessages.firstChild);
   }
 }
-
-
-function checkMobileDevice() {
-  const isMobile = /Android|webOS|iPhone|iPad|iPod|BlackBerry|IEMobile|Opera Mini/i.test(navigator.userAgent);
-  const deviceStatus = document.getElementById('deviceStatus');
-  const testVibrationButton = document.getElementById('testVibration');
-
-  if (isMobile) {
-    deviceStatus.textContent = 'Accessing on a mobile device';
-    testVibrationButton.style.display = 'block';
-  } else {
-    deviceStatus.textContent = 'Not a mobile device';
-    testVibrationButton.style.display = 'none';
-  }
-}
-
-// Call the function to check if the user is on a mobile device
-checkMobileDevice();
