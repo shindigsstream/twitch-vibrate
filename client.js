@@ -1,68 +1,67 @@
-let gamepad;
+let controllerConnected = false;
 
 function vibrateController() {
-  if (gamepad && 'vibrationActuator' in gamepad) {
-    gamepad.vibrationActuator.playEffect('dual-rumble', {
-      startDelay: 0,
-      duration: 500,
-      weakMagnitude: 1.0,
-      strongMagnitude: 1.0,
-    });
+  const gamepads = navigator.getGamepads();
+  for (const gamepad of gamepads) {
+    if (gamepad && gamepad.vibrationActuator) {
+      gamepad.vibrationActuator.playEffect('dual-rumble', {
+        startDelay: 0,
+        duration: 200,
+        weakMagnitude: 1.0,
+        strongMagnitude: 1.0,
+      });
+      controllerConnected = true;
+    }
+  }
+  updateConnectionStatus();
+}
+
+function vibratePhone() {
+  if ('vibrate' in navigator) {
+    navigator.vibrate(200);
+  } else {
+    console.log('Vibration not supported on this device');
   }
 }
 
-window.addEventListener('gamepadconnected', (e) => {
-  gamepad = e.gamepad;
-  console.log('Gamepad connected:', gamepad);
-  updateControllerStatus('Connected');
-});
-
-window.addEventListener('gamepaddisconnected', (e) => {
-  gamepad = null;
-  console.log('Gamepad disconnected');
-  updateControllerStatus('Not connected');
-});
-
-function updateControllerStatus(status) {
-  const controllerStatusElem = document.getElementById('controllerStatus');
-  controllerStatusElem.textContent = `Controller status: ${status}`;
-}
-
-function addChatMessage(message) {
-  const chatMessagesElem = document.getElementById('chatMessages');
-  const newMessageElem = document.createElement('li');
-  newMessageElem.textContent = message;
-  chatMessagesElem.appendChild(newMessageElem);
-
-  // Limit the number of displayed chat messages to 5
-  if (chatMessagesElem.childElementCount > 5) {
-    chatMessagesElem.removeChild(chatMessagesElem.firstElementChild);
+function updateConnectionStatus() {
+  const connectionStatus = document.getElementById('connectionStatus');
+  if (controllerConnected) {
+    connectionStatus.textContent = 'Controller connected';
+  } else {
+    connectionStatus.textContent = 'No controller connected';
   }
 }
+
+window.addEventListener('gamepadconnected', updateConnectionStatus);
+window.addEventListener('gamepaddisconnected', updateConnectionStatus);
 
 function connectToChannel() {
   const channelName = document.getElementById('channelName').value;
 
-  if (!channelName) {
-    alert('Please enter a Twitch channel name.');
-    return;
-  }
-
-  const tmiOptions = {
+  const client = new tmi.Client({
     connection: {
       secure: true,
       reconnect: true,
     },
     channels: [channelName],
-  };
-
-  const tmiClient = new tmi.Client(tmiOptions);
-
-  tmiClient.connect();
-
-  tmiClient.on('message', (channel, tags, message, self) => {
-    console.log('New chat message:', message);
-    vibrateController();
-    addChatMessage(message);
   });
+
+  client.connect();
+
+  client.on('message', (channel, tags, message, self) => {
+    vibrateController();
+    vibratePhone();
+    displayChatMessage(tags, message);
+  });
+}
+
+function displayChatMessage(tags, message) {
+  const chatMessages = document.getElementById('chatMessages');
+  const newMessage = document.createElement('li');
+  newMessage.textContent = `${tags['display-name']}: ${message}`;
+  chatMessages.appendChild(newMessage);
+  if (chatMessages.childElementCount > 5) {
+    chatMessages.removeChild(chatMessages.firstChild);
+  }
 }

@@ -6,10 +6,11 @@
   <title>Twitch Chat Vibration</title>
 </head>
 <body>
-  <h1>Connect a game controller and receive vibrations on new Twitch chat messages.</h1>
+  <h1>Connect to a Twitch channel and receive vibrations on new chat messages.</h1>
   <input type="text" id="channelName" placeholder="Enter Twitch channel name">
   <button onclick="connectToChannel()">Connect</button>
-  <p id="controllerStatus">Controller status: Not connected</p>
+  <h2>Connection status:</h2>
+  <p id="connectionStatus">No controller connected</p>
   <h2>Recent chat messages:</h2>
   <ul id="chatMessages"></ul>
   <script src="tmi.min.js"></script>
