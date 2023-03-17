@@ -25,9 +25,13 @@
     }
 
     #vibrationContainer {
-      height: 1.5em;
-      line-height: 1.5em;
-      text-align:  center;
+  margin-bottom: 20px; /* Add this line */
+  margin-top: 20px;
+  height: 32px;
+  font-size: 32px;
+  display: flex;
+  justify-content: center;
+  align-items: center;
     }
   </style>
 </head>
@@ -36,6 +40,13 @@
   <p>Connect your controller via USB or Bluetooth, and press any button in the browser window to ensure it's connected.</p>
   <div id="controllerStatus" class="not-connected">Controller status: Not connected</div>
   <div id="chatConnectionStatus" class="not-connected">Chat connection status: Not connected</div>
+<div>
+
+<div class="slider-container">
+    <label for="vibrationDelay">Vibration delay (seconds): <span id="vibrationDelayValue">0</span></label>
+  <input type="range" min="0" max="10" step="0.1" value="0" id="vibrationDelay">
+</div>
+</div>
   <div id="vibrationContainer">
     <span id="vibrationEmoji" class="hidden">&#x1F4F3;</span>
   </div>

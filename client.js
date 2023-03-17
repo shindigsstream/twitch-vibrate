@@ -2,15 +2,20 @@ let gamepad;
 
 function vibrateController(duration) {
   if (gamepad && 'vibrationActuator' in gamepad) {
-    gamepad.vibrationActuator.playEffect('dual-rumble', {
-      startDelay: 0,
-      duration: duration,
-      weakMagnitude: 1.0,
-      strongMagnitude: 1.0,
-    });
+    setTimeout(() => {
+      gamepad.vibrationActuator.playEffect('dual-rumble', {
+        startDelay: 0,
+        duration: duration,
+        weakMagnitude: 1.0,
+        strongMagnitude: 1.0,
+      });
+    }, vibrationDelay);
+
+    setTimeout(() => {
+      showVibrationEmoji(duration);
+    }, vibrationDelay);
   }
 }
-
 window.addEventListener('gamepadconnected', (e) => {
   gamepad = e.gamepad;
   console.log('Gamepad connected:', gamepad);
@@ -85,7 +90,7 @@ tmiClient.on('message', (channel, tags, message, self) => {
     if (match) {
       const duration = (match[0].length - 1) * 200; // Subtract 1 to exclude the 'b' character
       vibrateController(duration);
-      showVibrationEmoji(duration);
+   //   showVibrationEmoji(duration);
     }
   }
   addChatMessage(message);
@@ -117,3 +122,13 @@ function showVibrationEmoji(duration) {
     vibrationEmoji.classList.add('hidden');
   }, duration);
 }
+
+let vibrationDelay = 0;
+
+const vibrationDelaySlider = document.getElementById('vibrationDelay');
+
+vibrationDelaySlider.addEventListener('input', (e) => {
+  const delayValue = e.target.value;
+  vibrationDelay = delayValue * 1000;
+  document.getElementById('vibrationDelayValue').textContent = delayValue;
+});
