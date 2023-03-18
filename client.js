@@ -8,13 +8,27 @@ function vibrateController(duration) {
         duration: duration,
         weakMagnitude: 1.0,
         strongMagnitude: 1.0,
-      });
+      });1
     }, vibrationDelay);
 
     setTimeout(() => {
       showVibrationEmoji(duration);
     }, vibrationDelay);
   }
+
+ if (isFirefox()) {
+    setTimeout(() => {
+      if (gamepad && gamepad.pulse) {
+        gamepad.pulse(1.0, duration / 1000);
+        controllerConnected = true;
+      }
+    },  vibrationDelay);
+
+    setTimeout(() => {
+      showVibrationEmoji(duration);
+    }, vibrationDelay);
+  }
+
 }
 window.addEventListener('gamepadconnected', (e) => {
   gamepad = e.gamepad;
@@ -132,3 +146,20 @@ vibrationDelaySlider.addEventListener('input', (e) => {
   vibrationDelay = delayValue * 1000;
   document.getElementById('vibrationDelayValue').textContent = delayValue;
 });
+
+
+function isFirefox() {
+  return navigator.userAgent.indexOf('Firefox') !== -1;
+}
+
+
+
+
+function onGamepadConnected(event) {
+  console.log('Gamepad connected:', event.gamepad);
+}
+
+function onGamepadDisconnected(event) {
+  console.log('Gamepad disconnected:', event.gamepad);
+}
+
